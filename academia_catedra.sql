@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: localhost:3306
--- Tiempo de generación: 22-03-2024 a las 09:35:45
+-- Tiempo de generación: 22-03-2024 a las 11:31:24
 -- Versión del servidor: 8.0.36-0ubuntu0.22.04.1
 -- Versión de PHP: 8.1.2-1ubuntu2.14
 
@@ -28,7 +28,10 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `asignaturas` (
-  `idasignatura` int NOT NULL
+  `idasignatura` int NOT NULL,
+  `nombre` varchar(200) COLLATE utf8mb4_spanish_ci NOT NULL,
+  `curso` int NOT NULL,
+  `nota` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_spanish_ci;
 
 -- --------------------------------------------------------
@@ -38,7 +41,10 @@ CREATE TABLE `asignaturas` (
 --
 
 CREATE TABLE `cursos` (
-  `idcursos` int NOT NULL
+  `idcursos` int NOT NULL,
+  `nombre` varchar(200) COLLATE utf8mb4_spanish_ci NOT NULL,
+  `asignatura` int NOT NULL,
+  `alumno` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_spanish_ci;
 
 -- --------------------------------------------------------
@@ -48,7 +54,12 @@ CREATE TABLE `cursos` (
 --
 
 CREATE TABLE `preinscripcion` (
-  `idpre` int NOT NULL
+  `idpre` int NOT NULL,
+  `usuario` int NOT NULL,
+  `colegio` varchar(200) COLLATE utf8mb4_spanish_ci NOT NULL,
+  `curso` int NOT NULL,
+  `asignatura` int NOT NULL,
+  `comonosconocio` text COLLATE utf8mb4_spanish_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_spanish_ci;
 
 -- --------------------------------------------------------
@@ -58,7 +69,14 @@ CREATE TABLE `preinscripcion` (
 --
 
 CREATE TABLE `usuarios` (
-  `idusuario` int NOT NULL
+  `idusuario` int NOT NULL,
+  `nombre` varchar(150) COLLATE utf8mb4_spanish_ci NOT NULL,
+  `apellidos` varchar(150) COLLATE utf8mb4_spanish_ci NOT NULL,
+  `fecha` date NOT NULL,
+  `telefono` varchar(9) COLLATE utf8mb4_spanish_ci NOT NULL,
+  `cp` varchar(5) COLLATE utf8mb4_spanish_ci NOT NULL,
+  `rol` text COLLATE utf8mb4_spanish_ci NOT NULL,
+  `nota` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_spanish_ci;
 
 --
@@ -69,25 +87,33 @@ CREATE TABLE `usuarios` (
 -- Indices de la tabla `asignaturas`
 --
 ALTER TABLE `asignaturas`
-  ADD PRIMARY KEY (`idasignatura`);
+  ADD PRIMARY KEY (`idasignatura`),
+  ADD KEY `curso` (`curso`),
+  ADD KEY `nota` (`nota`);
 
 --
 -- Indices de la tabla `cursos`
 --
 ALTER TABLE `cursos`
-  ADD PRIMARY KEY (`idcursos`);
+  ADD PRIMARY KEY (`idcursos`),
+  ADD KEY `asignatura` (`asignatura`),
+  ADD KEY `alumno` (`alumno`);
 
 --
 -- Indices de la tabla `preinscripcion`
 --
 ALTER TABLE `preinscripcion`
-  ADD PRIMARY KEY (`idpre`);
+  ADD PRIMARY KEY (`idpre`),
+  ADD KEY `usuario` (`usuario`),
+  ADD KEY `curso` (`curso`),
+  ADD KEY `asignatura` (`asignatura`);
 
 --
 -- Indices de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  ADD PRIMARY KEY (`idusuario`);
+  ADD PRIMARY KEY (`idusuario`),
+  ADD KEY `fk_nota` (`nota`);
 
 --
 -- AUTO_INCREMENT de las tablas volcadas
@@ -116,6 +142,37 @@ ALTER TABLE `preinscripcion`
 --
 ALTER TABLE `usuarios`
   MODIFY `idusuario` int NOT NULL AUTO_INCREMENT;
+
+--
+-- Restricciones para tablas volcadas
+--
+
+--
+-- Filtros para la tabla `asignaturas`
+--
+ALTER TABLE `asignaturas`
+  ADD CONSTRAINT `fk_cursos1` FOREIGN KEY (`curso`) REFERENCES `cursos` (`idcursos`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Filtros para la tabla `cursos`
+--
+ALTER TABLE `cursos`
+  ADD CONSTRAINT `fk_asignaturas` FOREIGN KEY (`asignatura`) REFERENCES `asignaturas` (`idasignatura`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_usuarios1` FOREIGN KEY (`alumno`) REFERENCES `usuarios` (`idusuario`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Filtros para la tabla `preinscripcion`
+--
+ALTER TABLE `preinscripcion`
+  ADD CONSTRAINT `fk_asignatura` FOREIGN KEY (`asignatura`) REFERENCES `asignaturas` (`idasignatura`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_cursos` FOREIGN KEY (`curso`) REFERENCES `cursos` (`idcursos`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_usuarios` FOREIGN KEY (`usuario`) REFERENCES `usuarios` (`idusuario`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Filtros para la tabla `usuarios`
+--
+ALTER TABLE `usuarios`
+  ADD CONSTRAINT `fk_nota` FOREIGN KEY (`nota`) REFERENCES `asignaturas` (`nota`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
